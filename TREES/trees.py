@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*- 
 
 from math import log
+import operator
 
 def createDataSet():
     dataSet = [[1, 1, 'yes'],
@@ -77,3 +78,41 @@ def chooseBestFeatureToSplit(dataSet):
             bestFeature = i
 
     return bestFeature
+
+def majorityCnt(classList):
+    classCount = {}
+    for vote in classList:
+        if vote not in classCount.key():
+            classCount[vote] = 0
+        classCount[vote] += 1
+    sortedClassCount = sorted(classCount.iteritems(),\
+            key=operator.itemgetter(1), reverse=True )
+    return sortedClassCount[0][0]
+
+
+# 创建树的函数代码
+
+def createTree(dataSet, labels):
+    classList = [example[-1] for example in dataSet]
+
+    # 类别完全相同则停止继续划分
+    if classList.count(classList[0]) == len(classList):
+        return classList[0]
+
+    # 遍历完所有特征时返回出现次数最多的类别
+    if len(dataSet[0]) == 1:
+        return majorityCnt(classList)
+
+    bestFeat = chooseBestFeatureToSplit(dataSet)
+    bestFeatLabel = labels[bestFeat]
+    myTree = {bestFeatLabel:{}}
+
+    # 得到列表包含的所有属性值
+    del(labels[bestFeat])
+    featValues = [example[bestFeat] for example in dataSet]
+    uniqueVals = set(featValues)
+    for value in uniqueVals:
+        subLabels = labels[:]
+        myTree[bestFeatLabel][value] = createTree(splitDataSet\
+                (dataSet, bestFeat, value), subLabels)
+    return myTree
